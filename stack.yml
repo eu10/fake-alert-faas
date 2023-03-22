@@ -1,0 +1,10 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://openfaas.devopsdebug.freeddns.org
+functions:
+  fake-blocklag:
+    lang: golang-middleware
+    handler: ./fake-blocklag
+    image: registry.devopsdebug.freeddns.org/fake-blocklag:latest
+
