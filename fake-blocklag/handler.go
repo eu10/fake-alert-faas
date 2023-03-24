@@ -40,7 +40,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Println(string(body))
 	w.Header().Add("Content-Type", "application/json")
-	w.Write([]byte(string(body)))
+	w.Write(body)
 }
 
 func Fetch(endpoint string) []byte {
