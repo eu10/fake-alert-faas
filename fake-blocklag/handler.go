@@ -39,7 +39,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Println(string(body))
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("content-Type", "application/json")
 	w.Write(body)
 }
 
