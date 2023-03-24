@@ -16,14 +16,15 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	const endpoint = "https://api.bitcore.io/api/BTC/mainnet/block/tip"
 	const filePath = "temp.json"
 	var body []byte
+	n := rand.Intn(100)
+	if n < 60 {
+		if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+			// path/to/whatever does not exist
+			body = Fetch(endpoint)
+			_ = ioutil.WriteFile(filePath, body, 0644)
+		} else {
+			fmt.Println("use cache")
 
-	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		// path/to/whatever does not exist
-		body = Fetch(endpoint)
-		_ = ioutil.WriteFile(filePath, body, 0644)
-	} else {
-		n := rand.Intn(100)
-		if n < 60 {
 			jsonFile, err := os.Open(filePath)
 			if err != nil {
 				fmt.Println(err)
@@ -31,10 +32,10 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			defer jsonFile.Close()
 
 			body, _ = ioutil.ReadAll(jsonFile)
-		} else {
-			body = Fetch(endpoint)
-			_ = ioutil.WriteFile(filePath, body, 0644)
 		}
+	} else {
+		body = Fetch(endpoint)
+		_ = ioutil.WriteFile(filePath, body, 0644)
 	}
 
 	// w.WriteHeader(http.StatusOK)
