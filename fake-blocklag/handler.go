@@ -1,26 +1,111 @@
 package function
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"math/rand"
 	"net/http"
+	"os"
 
-	shell "github.com/ipfs/go-ipfs-api"
+	"github.com/Jeffail/gabs"
 )
 
 func Handle(w http.ResponseWriter, r *http.Request) {
-	var input []byte
-	sh := shell.NewShell("https://ipfs.devopsdebug.freeddns.org")
-	err := sh.Get("QmS4wvjiYFKk2hP7DumxpE53ycBfyrjuzKv34MY9eadeMT", ".")
-	if r.Body != nil {
-		defer r.Body.Close()
+	const endpoint = "https://api.bitcore.io/api/BTC/mainnet/block/tip"
+	const filePath = "temp.json"
+	var body []byte
 
-		body, _ := io.ReadAll(r.Body)
+	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		// path/to/whatever does not exist
+		body = Fetch(endpoint)
+		_ = ioutil.WriteFile(filePath, body, 0644)
+	} else {
+		n := rand.Intn(100)
+		if n < 80 {
+			jsonFile, err := os.Open(filePath)
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer jsonFile.Close()
 
-		input = body
+			body, _ = ioutil.ReadAll(jsonFile)
+		} else {
+			body = Fetch(endpoint)
+			_ = ioutil.WriteFile(filePath, body, 0644)
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Body: %s", string(input))))
-	w.Write([]byte(fmt.Sprintf("Body: %s", string(err))))
+	fmt.Println(string(body))
+	w.Header().Add("Content-Type", "application/json")
+	w.Write([]byte(string(body)))
+}
+
+func Fetch(endpoint string) []byte {
+	var body []byte
+	resp, err := http.Get(endpoint)
+	if err != nil {
+		fmt.Println(err)
+		return body
+	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+
+		body, _ = io.ReadAll(resp.Body)
+	}
+	return body
+}
+
+func Test2(data []byte) string {
+	jsonParsed, err := gabs.ParseJSON(data)
+	if err != nil {
+		panic(err)
+	}
+	height := jsonParsed.Path("height").Data()
+	fmt.Println(jsonParsed)
+	fmt.Println(height)
+	jsonParsed1, _ := gabs.ParseJSON([]byte(`{"height":123}`))
+	jsonParsed.Delete("height")
+	jsonParsed.Merge(jsonParsed1)
+	fmt.Println(jsonParsed)
+	return jsonParsed.String()
+}
+
+func Test1() {
+	data := []byte(`{
+		"employees":{
+		   "protected":false,
+		   "address":{
+			  "street":"22 Saint-Lazare",
+			  "postalCode":"75003",
+			  "city":"Paris",
+			  "countryCode":"FRA",
+			  "country":"France"
+		   },
+		   "employee":[
+			  {
+				 "id":1,
+				 "first_name":"Jeanette",
+				 "last_name":"Penddreth"
+			  },
+			  {
+				 "id":2,
+				 "firstName":"Giavani",
+				 "lastName":"Frediani"
+			  }
+		   ]
+		}
+	 }`)
+	jsonParsed, err := gabs.ParseJSON(data)
+	if err != nil {
+		panic(err)
+	}
+
+	// Search JSON
+	fmt.Println("Get value of Protected:\t", jsonParsed.Path("employees.protected").Data())
+	fmt.Println("Get value of Country:\t", jsonParsed.Search("employees", "address", "country").Data())
+	fmt.Println("ID of first employee:\t", jsonParsed.Path("employees.employee.0.id").String())
+	fmt.Println("Check Country Exists:\t", jsonParsed.Exists("employees", "address", "countryCode"))
 }
