@@ -12,7 +12,7 @@ import (
 )
 
 func Handle(w http.ResponseWriter, r *http.Request) {
-	const endpoint = "https://api.bitcore.io/api/BTC/mainnet/block/tip"
+	const endpoint = "https://api.bitcore.io/api/LTC/mainnet/block/tip"
 	const filePath = "temp.json"
 	var body []byte
 
