@@ -1,7 +1,6 @@
 package function
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -38,11 +37,10 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.WriteHeader(http.StatusOK)
+	// w.WriteHeader(http.StatusOK)
 	fmt.Println(string(body))
 	w.Header().Set("Content-Type", "application/json")
-	jsonRes, _ := json.Marshal(body)
-	w.Write(jsonRes)
+	w.Write(body)
 }
 
 func Fetch(endpoint string) []byte {
