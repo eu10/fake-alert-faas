@@ -19,6 +19,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		body = Fetch(endpoint)
 		_ = ioutil.WriteFile(filePath, body, 0644)
+		fmt.Println("write file")
 	} else {
 		n := rand.Intn(100)
 		if n >= 0 {
