@@ -21,7 +21,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		_ = ioutil.WriteFile(filePath, body, 0644)
 	} else {
 		n := rand.Intn(100)
-		if n < 60 {
+		if n > 10 {
 			fmt.Println("use cache")
 
 			jsonFile, err := os.Open(filePath)
