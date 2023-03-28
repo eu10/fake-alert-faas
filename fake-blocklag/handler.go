@@ -33,17 +33,17 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 			body, _ = ioutil.ReadAll(jsonFile)
 		} else {
-			fmt.Println(5)
+			fmt.Println(n)
 
 			body = Fetch(endpoint)
 			_ = ioutil.WriteFile(filePath, body, 0644)
 		}
 	}
 
-	// w.WriteHeader(http.StatusOK)
 	fmt.Println(string(body))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(body)
+	// w.Write(nil)
 }
 
 func Fetch(endpoint string) []byte {
